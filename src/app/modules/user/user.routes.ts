@@ -1,42 +1,31 @@
 import { Router } from "express";
-import { UserController } from "./user.controller";
-import clientInfoParser from "../../middleware/clientInfoParser";
 import validateRequest from "../../middleware/validateRequest";
 import { UserValidation } from "./user.validation";
+import { UserControllers } from "./user.controller";
 import auth from "../../middleware/auth";
-import { UserRole } from "./user.interface";
-import { parseBody } from "../../middleware/bodyParser";
+import { USER_ROLE } from "../../constants/constants.global";
 
 const router = Router();
 
-router.get("/", auth(UserRole.ADMIN), UserController.getAllUser);
+router.post(
+    "/create-user",
+    validateRequest(UserValidation.createUserValidationSchema),
+    UserControllers.registerUser,
+);
+
+router.get("/", auth(USER_ROLE.admin), UserControllers.getAllUser);
 
 router.get(
     "/me",
-    auth(UserRole.ADMIN, UserRole.USER),
-    UserController.myProfile,
+    auth(USER_ROLE.tenant, USER_ROLE.admin, USER_ROLE.landlord),
+    UserControllers.myProfile,
 );
 
 router.post(
-    "/",
-    clientInfoParser,
-    validateRequest(UserValidation.userValidationSchema),
-    UserController.registerUser,
-);
-// update profile
-// router.patch(
-//    '/update-profile',
-//    auth(UserRole.USER),
-//    multerUpload.single('profilePhoto'),
-//    parseBody,
-//    validateRequest(UserValidation.customerInfoValidationSchema),
-//    UserController.updateProfile
-// );
-
-router.patch(
-    "/:id/status",
-    auth(UserRole.ADMIN),
-    UserController.updateUserStatus,
+    "/change-status/:id",
+    auth(USER_ROLE.admin),
+    validateRequest(UserValidation.changeStatusValidationSchema),
+    UserControllers.updateUserStatus,
 );
 
 export const UserRoutes = router;

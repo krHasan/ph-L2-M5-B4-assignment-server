@@ -1,4 +1,4 @@
-import { StatusCodes } from "../config/httpStatus";
+import { httpStatus } from "../config/httpStatus";
 import AppError from "../errors/appError";
 import catchAsync from "../utils/catchAsync";
 import { NextFunction, Request, Response } from "express";
@@ -7,7 +7,7 @@ export const parseBody = catchAsync(
     async (req: Request, res: Response, next: NextFunction) => {
         if (!req.body.data) {
             throw new AppError(
-                StatusCodes.BAD_REQUEST,
+                httpStatus.BAD_REQUEST,
                 "Please provide data in the body under data key",
             );
         }

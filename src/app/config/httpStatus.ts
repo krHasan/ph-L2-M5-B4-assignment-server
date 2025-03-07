@@ -1,4 +1,4 @@
-export const StatusCodes = {
+export const httpStatus = {
     // Informational responses (100–199)
     CONTINUE: 100,
     SWITCHING_PROTOCOLS: 101,

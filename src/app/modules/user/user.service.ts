@@ -1,49 +1,66 @@
-import { IUser, UserRole } from "./user.interface";
-import User from "./user.model";
+import mongoose from "mongoose";
+import { TUser } from "./user.interface";
+import { USER_ROLE, USER_STATUS } from "../../constants/constants.global";
 import AppError from "../../errors/appError";
+import { httpStatus } from "../../config/httpStatus";
+import User from "./user.model";
 import QueryBuilder from "../../builder/QueryBuilder";
 import { UserSearchableFields } from "./user.constant";
-// import Customer from '../customer/customer.model';
-import mongoose from "mongoose";
-import { IImageFile } from "../../interface/IImageFile";
-import { AuthService } from "../auth/auth.service";
-// import { ICustomer } from '../customer/customer.interface';
-import { IJwtPayload } from "../auth/auth.interface";
-import { StatusCodes } from "../../config/httpStatus";
+import { TJwtPayload } from "../auth/auth.interface";
 
-// Function to register user
-const registerUser = async (userData: IUser) => {
-    // const session = await mongoose.startSession();
-    // try {
-    //    session.startTransaction();
-    //    if ([UserRole.ADMIN].includes(userData.role)) {
-    //       throw new AppError(StatusCodes.NOT_ACCEPTABLE, 'Invalid role. Only User is allowed.');
-    //    }
-    //    // Check if the user already exists by email
-    //    const existingUser = await User.findOne({ email: userData.email }).session(session);
-    //    if (existingUser) {
-    //       throw new AppError(StatusCodes.NOT_ACCEPTABLE, 'Email is already registered');
-    //    }
-    //    // Create the user
-    //    const user = new User(userData);
-    //    const createdUser = await user.save({ session });
-    //    const profile = new Customer({
-    //       user: createdUser._id,
-    //    });
-    //    await profile.save({ session });
-    //    await session.commitTransaction();
-    //    return await AuthService.loginUser({ email: createdUser.email, password: userData.password, clientInfo: userData.clientInfo });
-    // } catch (error) {
-    //    if (session.inTransaction()) {
-    //       await session.abortTransaction();
-    //    }
-    //    throw error;
-    // } finally {
-    //    session.endSession();
-    // }
+const registerUserIntoDB = async (userData: TUser) => {
+    const session = await mongoose.startSession();
+    try {
+        session.startTransaction();
+        if (userData.role === USER_ROLE.admin) {
+            throw new AppError(
+                httpStatus.NOT_ACCEPTABLE,
+                "Invalid role. Only Tenant or Landlord is allowed.",
+            );
+        }
+        // Check if the user already exists by email
+        const emailExists = await User.findOne({
+            email: userData.email,
+        }).session(session);
+
+        if (emailExists) {
+            throw new AppError(
+                httpStatus.NOT_ACCEPTABLE,
+                "Email is already registered",
+            );
+        }
+
+        // Check if the user already exists by email
+        const numberExists = await User.findOne({
+            phoneNumber: userData.phoneNumber,
+        }).session(session);
+
+        if (numberExists) {
+            throw new AppError(
+                httpStatus.NOT_ACCEPTABLE,
+                "Phone number is already registered",
+            );
+        }
+
+        // Create the user
+        const newUser = await User.create([userData], { session });
+        if (!newUser) {
+            throw new AppError(httpStatus.BAD_REQUEST, "Failed to create user");
+        }
+        await session.commitTransaction();
+
+        return newUser;
+    } catch (error) {
+        if (session.inTransaction()) {
+            await session.abortTransaction();
+        }
+        throw error;
+    } finally {
+        session.endSession();
+    }
 };
 
-const getAllUser = async (query: Record<string, unknown>) => {
+const getAllUserFromDB = async (query: Record<string, unknown>) => {
     const UserQuery = new QueryBuilder(User.find(), query)
         .search(UserSearchableFields)
         .filter()
@@ -59,67 +76,25 @@ const getAllUser = async (query: Record<string, unknown>) => {
     };
 };
 
-const myProfile = async (authUser: IJwtPayload) => {
-    // const isUserExists = await User.findById(authUser.userId);
-    // if (!isUserExists) {
-    //    throw new AppError(StatusCodes.NOT_FOUND, "User not found!");
-    // }
-    // if (!isUserExists.isActive) {
-    //    throw new AppError(StatusCodes.BAD_REQUEST, "User is not active!");
-    // }
-    // const profile = await Customer.findOne({ user: isUserExists._id });
-    // return {
-    //    ...isUserExists.toObject(),
-    //    profile: profile || null
-    // }
+const myProfile = async (authUser: TJwtPayload) => {
+    const isUserExists = await User.isUserExistsByEmail(authUser.email);
+    if (!isUserExists) {
+        throw new AppError(httpStatus.NOT_FOUND, "User not found!");
+    }
+    if (isUserExists.isDeleted || isUserExists.status === USER_STATUS.blocked) {
+        throw new AppError(httpStatus.BAD_REQUEST, "User is not active!");
+    }
+    return isUserExists;
 };
 
-// const updateProfile = async (
-//    payload: Partial<ICustomer>,
-//    file: IImageFile,
-//    authUser: IJwtPayload
-// ) => {
-//    const isUserExists = await User.findById(authUser.userId);
-
-//    if (!isUserExists) {
-//       throw new AppError(StatusCodes.NOT_FOUND, "User not found!");
-//    }
-//    if (!isUserExists.isActive) {
-//       throw new AppError(StatusCodes.BAD_REQUEST, "User is not active!");
-//    }
-
-//    if (file && file.path) {
-//       payload.photo = file.path;
-//    }
-
-//    const result = await Customer.findOneAndUpdate(
-//       { user: authUser.userId },
-//       payload,
-//       {
-//          new: true,
-//       }
-//    ).populate('user');
-
-//    return result;
-// };
-
-const updateUserStatus = async (userId: string) => {
-    const user = await User.findById(userId);
-
-    console.log("comes here");
-    if (!user) {
-        throw new AppError(StatusCodes.NOT_FOUND, "User is not found");
-    }
-
-    user.isActive = !user.isActive;
-    const updatedUser = await user.save();
-    return updatedUser;
+const updateUserStatus = async (id: string, payload: { status: string }) => {
+    const result = await User.findByIdAndUpdate(id, payload, { new: true });
+    return result;
 };
 
 export const UserServices = {
-    registerUser,
-    getAllUser,
+    registerUserIntoDB,
+    getAllUserFromDB,
     myProfile,
     updateUserStatus,
-    // updateProfile,
 };

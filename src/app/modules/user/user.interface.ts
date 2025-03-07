@@ -1,39 +1,31 @@
-import { Document, Model } from 'mongoose';
+/* eslint-disable no-unused-vars */
+import { Model } from "mongoose";
+import { USER_ROLE, USER_STATUS } from "../../constants/constants.global";
 
-// Enum for User Roles
-export enum UserRole {
-   ADMIN = 'admin',
-   USER = 'user'
+export type TUserRole = keyof typeof USER_ROLE;
+export type TUserStatus = keyof typeof USER_STATUS;
+
+export interface TUser {
+    name: string;
+    email: string;
+    phoneNumber: string;
+    password: string;
+    needsPasswordChange: boolean;
+    passwordChangedAt?: Date;
+    role: TUserRole;
+    status: TUserStatus;
+    isDeleted: boolean;
 }
 
-// User Schema Definition
-export interface IUser extends Document {
-   email: string;
-   password: string;
-   name: string;
-   role: UserRole;
-   hasShop: boolean;
-   clientInfo: {
-      device: 'pc' | 'mobile'; // Device type
-      browser: string; // Browser name
-      ipAddress: string; // User IP address
-      pcName?: string; // Optional PC name
-      os?: string; // Optional OS name (Windows, MacOS, etc.)
-      userAgent?: string; // Optional user agent string
-   };
-   lastLogin: Date;
-   isActive: boolean;
-   otpToken?: string | null;
-   createdAt: Date;
-   updatedAt: Date;
-}
-
-export interface UserModel extends Model<IUser> {
-   //instance methods for checking if passwords are matched
-   isPasswordMatched(
-      plainTextPassword: string,
-      hashedPassword: string
-   ): Promise<boolean>;
-   isUserExistsByEmail(id: string): Promise<IUser>;
-   checkUserExist(userId: string): Promise<IUser>;
+export interface UserModel extends Model<TUser> {
+    isUserExistsByEmail(email: string): Promise<TUser>;
+    checkUserExist(id: string): Promise<TUser>;
+    isPasswordMatched(
+        plainTextPassword: string,
+        hashedPassword: string,
+    ): Promise<boolean>;
+    isJWTIssuedBeforePasswordChanged(
+        passwordChangedTimestamp: Date,
+        jwtIssuedTimestamp: number,
+    ): boolean;
 }

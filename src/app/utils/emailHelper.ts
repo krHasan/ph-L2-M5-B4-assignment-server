@@ -1,8 +1,4 @@
-import * as fs from "fs";
-import * as path from "path";
-const Util = require("util");
-const ReadFile = Util.promisify(fs.readFile);
-const Handlebars = require("handlebars");
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import nodemailer from "nodemailer";
 import config from "../config";
 
@@ -54,21 +50,6 @@ const sendEmail = async (
     }
 };
 
-const createEmailContent = async (data: object, templateType: string) => {
-    try {
-        const templatePath = path.join(
-            process.cwd(),
-            `/src/templates/${templateType}.template.hbs`,
-        );
-        const content = await ReadFile(templatePath, "utf8");
-
-        const template = Handlebars.compile(content);
-
-        return template(data);
-    } catch (error) {}
-};
-
 export const EmailHelper = {
     sendEmail,
-    createEmailContent,
 };

@@ -7,7 +7,7 @@ import AppError from "../../errors/appError";
 import mongoose from "mongoose";
 // import { generateOrderInvoicePDF } from '../../utils/generateOrderInvoicePDF';
 import { EmailHelper } from "../../utils/emailHelper";
-import { StatusCodes } from "../../config/httpStatus";
+import { httpStatus } from "../../config/httpStatus";
 
 const app = express();
 
@@ -65,13 +65,13 @@ const initPayment = async (paymentData: {
             return GatewayPageURL;
         } else {
             throw new AppError(
-                StatusCodes.BAD_GATEWAY,
+                httpStatus.BAD_GATEWAY,
                 "Failed to generate payment gateway URL.",
             );
         }
     } catch (error) {
         throw new AppError(
-            StatusCodes.INTERNAL_SERVER_ERROR,
+            httpStatus.INTERNAL_SERVER_ERROR,
             "An error occurred while processing payment.",
         );
     }

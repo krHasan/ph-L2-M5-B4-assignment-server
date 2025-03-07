@@ -1,12 +1,17 @@
 import mongoose, { Schema } from "mongoose";
-import { IUser, UserModel, UserRole } from "./user.interface";
-import bcrypt from "bcrypt";
+import { TUser, UserModel } from "./user.interface";
+import {
+    USER_STATUS,
+    userRoleArray,
+    userStatusArray,
+} from "../../constants/constants.global";
 import config from "../../config";
+import bcrypt from "bcrypt";
 import AppError from "../../errors/appError";
-import { StatusCodes } from "../../config/httpStatus";
+import { httpStatus } from "../../config/httpStatus";
 
 // Create the User schema based on the interface
-const userSchema = new Schema<IUser, UserModel>(
+const userSchema = new Schema<TUser, UserModel>(
     {
         name: {
             type: String,
@@ -18,54 +23,35 @@ const userSchema = new Schema<IUser, UserModel>(
             unique: true,
             lowercase: true,
         },
+        phoneNumber: {
+            type: String,
+            required: true,
+            unique: true,
+        },
         password: {
             type: String,
             required: true,
+            select: 0,
         },
-        role: {
-            type: String,
-            enum: [UserRole.ADMIN, UserRole.USER],
-            default: UserRole.USER,
-        },
-        hasShop: {
-            type: Boolean,
-            default: false, // Default value is false
-        },
-        clientInfo: {
-            device: {
-                type: String,
-                enum: ["pc", "mobile"],
-                required: true,
-            },
-            browser: {
-                type: String,
-                required: true,
-            },
-            ipAddress: {
-                type: String,
-                required: true,
-            },
-            pcName: {
-                type: String,
-            },
-            os: {
-                type: String,
-            },
-            userAgent: {
-                type: String,
-            },
-        },
-        lastLogin: {
-            type: Date,
-            default: Date.now,
-        },
-        isActive: {
+        needsPasswordChange: {
             type: Boolean,
             default: true,
         },
-        otpToken: {
+        passwordChangedAt: {
+            type: Date,
+        },
+        role: {
             type: String,
-            default: null,
+            enum: userRoleArray,
+        },
+        status: {
+            type: String,
+            enum: userStatusArray,
+            default: USER_STATUS.active,
+        },
+        isDeleted: {
+            type: Boolean,
+            default: false,
         },
     },
     {
@@ -74,13 +60,12 @@ const userSchema = new Schema<IUser, UserModel>(
 );
 
 userSchema.pre("save", async function (next) {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const user = this;
-
     user.password = await bcrypt.hash(
         user.password,
         Number(config.bcrypt_salt_rounds),
     );
-
     next();
 });
 
@@ -97,8 +82,8 @@ userSchema.set("toJSON", {
 });
 
 userSchema.statics.isPasswordMatched = async function (
-    plainTextPassword,
-    hashedPassword,
+    plainTextPassword: string,
+    hashedPassword: string,
 ) {
     return await bcrypt.compare(plainTextPassword, hashedPassword);
 };
@@ -111,15 +96,41 @@ userSchema.statics.checkUserExist = async function (userId: string) {
     const existingUser = await this.findById(userId);
 
     if (!existingUser) {
-        throw new AppError(StatusCodes.NOT_ACCEPTABLE, "User does not exist!");
+        throw new AppError(httpStatus.NOT_ACCEPTABLE, "User does not exist!");
     }
 
-    if (!existingUser.isActive) {
-        throw new AppError(StatusCodes.NOT_ACCEPTABLE, "User is not active!");
+    if (existingUser.isDeleted || existingUser.status === USER_STATUS.blocked) {
+        throw new AppError(httpStatus.NOT_ACCEPTABLE, "User is not active!");
     }
 
     return existingUser;
 };
 
-const User = mongoose.model<IUser, UserModel>("User", userSchema);
+userSchema.statics.isJWTIssuedBeforePasswordChanged = function (
+    passwordChangedTimestamp,
+    jwtIssuedTimestamp,
+) {
+    const passwordChangedTime =
+        new Date(passwordChangedTimestamp).getTime() / 1000;
+    return passwordChangedTime > jwtIssuedTimestamp;
+};
+
+userSchema.pre("find", function (next) {
+    this.find({ isDeleted: { $ne: true } });
+    next();
+});
+
+userSchema.pre("aggregate", function (next) {
+    this.pipeline().unshift({
+        $match: { isDeleted: { $ne: true } },
+    });
+    next();
+});
+
+userSchema.pre("findOne", function (next) {
+    this.find({ isDeleted: { $ne: true } });
+    next();
+});
+
+const User = mongoose.model<TUser, UserModel>("User", userSchema);
 export default User;
