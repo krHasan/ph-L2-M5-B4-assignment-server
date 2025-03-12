@@ -18,4 +18,29 @@ router.post(
     ListingControllers.createListing,
 );
 
+router.get("/", ListingControllers.getAllListings);
+
+router.get(
+    "/my-listings",
+    auth(USER_ROLE.landlord),
+    ListingControllers.getMyListings,
+);
+
+router.get("/:listingId", ListingControllers.getListingById);
+
+router.patch(
+    "/:listingId",
+    auth(USER_ROLE.landlord),
+    multerUpload.fields([{ name: "images" }]),
+    parseBody,
+    validateRequest(ListingValidations.updateListingValidationSchema),
+    ListingControllers.updateListing,
+);
+
+router.delete(
+    "/:listingId",
+    auth(USER_ROLE.admin, USER_ROLE.landlord),
+    ListingControllers.deleteListing,
+);
+
 export const ListingRoutes = router;

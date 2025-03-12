@@ -1,11 +1,11 @@
 /* eslint-disable no-unused-vars */
-import { Model } from "mongoose";
+import { Document, Model } from "mongoose";
 import { USER_ROLE, USER_STATUS } from "../../constants/constants.global";
 
 export type TUserRole = keyof typeof USER_ROLE;
 export type TUserStatus = keyof typeof USER_STATUS;
 
-export interface TUser {
+export interface TUser extends Document {
     name: string;
     email: string;
     phoneNumber: string;

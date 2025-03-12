@@ -1,6 +1,12 @@
 import { model, Schema } from "mongoose";
 import { TListing } from "./listing.interface";
-import { RENT_TYPE, rentTypeArray } from "./listing.constants";
+import {
+    LISTING_STATUS,
+    listingStatusArray,
+    RENT_TYPE,
+    rentAreaArray,
+    rentTypeArray,
+} from "./listing.constants";
 
 const listingSchema = new Schema<TListing>(
     {
@@ -8,6 +14,11 @@ const listingSchema = new Schema<TListing>(
             type: Schema.Types.ObjectId,
             ref: "User",
             required: [true, "Landlord id is required"],
+        },
+        rentArea: {
+            type: String,
+            enum: rentAreaArray,
+            required: [true, "Rent Area is required"],
         },
         location: {
             type: String,
@@ -40,6 +51,15 @@ const listingSchema = new Schema<TListing>(
         amenities: {
             type: [String],
             default: [],
+        },
+        isActive: {
+            type: Boolean,
+            default: true,
+        },
+        status: {
+            type: String,
+            enum: listingStatusArray,
+            default: LISTING_STATUS.Available,
         },
     },
     {
