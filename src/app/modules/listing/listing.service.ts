@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { Types } from "mongoose";
 import QueryBuilder from "../../builder/QueryBuilder";
 import { httpStatus } from "../../config/httpStatus";
 import AppError from "../../errors/appError";
@@ -10,6 +11,7 @@ import { Listing } from "./listing.model";
 
 const createListingIntoDB = async (
     listingData: Partial<TListing>,
+    landlordEmail: string,
     listingImages: IImageFiles,
 ) => {
     const { images } = listingImages;
@@ -19,12 +21,16 @@ const createListingIntoDB = async (
 
     listingData.imageUrls = images.map((image) => image.path);
 
-    const isUserExists = await User.checkUserExist(
-        String(listingData.landlordId),
-    );
+    const isUserExists = (await User.isUserExistsByEmail(
+        String(landlordEmail),
+    )) as {
+        _id: Types.ObjectId;
+    };
     if (!isUserExists) {
         throw new AppError(httpStatus.NOT_FOUND, "Landlord user not found");
     }
+
+    listingData.landlordId = isUserExists._id;
 
     const result = await Listing.create(listingData);
     return result;

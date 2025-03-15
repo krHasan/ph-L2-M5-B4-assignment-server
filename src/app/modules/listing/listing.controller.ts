@@ -9,6 +9,7 @@ import { TJwtPayload } from "../auth/auth.interface";
 const createListing = catchAsync(async (req: Request, res: Response) => {
     const result = await ListingServices.createListingIntoDB(
         req.body,
+        req.body.landlordEmail,
         req.files as IImageFiles,
     );
 

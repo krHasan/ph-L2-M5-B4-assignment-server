@@ -1,13 +1,14 @@
 import { z } from "zod";
-import { rentTypeArray } from "./listing.constants";
+import { rentAreaArray, rentTypeArray } from "./listing.constants";
 
 const createListingValidationSchema = z.object({
     body: z.object({
-        landlordId: z.string({
+        landlordEmail: z.string({
             required_error: "Landlord info is required",
         }),
+        rentArea: z.enum(rentAreaArray as [string, ...string[]]),
         location: z.string({
-            required_error: "Location is required",
+            required_error: "Rent area is required",
         }),
         description: z
             .string()
@@ -36,7 +37,7 @@ const createListingValidationSchema = z.object({
 
 const updateListingValidationSchema = z.object({
     body: z.object({
-        landlordId: z
+        landlordEmail: z
             .string({
                 required_error: "Landlord info is required",
             })
