@@ -16,10 +16,10 @@ export const REQUEST_STATUS = {
     approved: "approved",
     rejected: "rejected",
 } as const;
-export const requestStatus = Object.values(REQUEST_STATUS);
+export const requestStatusArray = Object.values(REQUEST_STATUS);
 
 export const PAYMENT_STATUS = {
     pending: "pending",
     paid: "paid",
 } as const;
-export const paymentStatus = Object.values(PAYMENT_STATUS);
+export const paymentStatusArray = Object.values(PAYMENT_STATUS);
