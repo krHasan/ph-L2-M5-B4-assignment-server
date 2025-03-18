@@ -24,7 +24,6 @@ router.get(
 router.post(
     "/change-status/:id",
     auth(USER_ROLE.admin),
-    validateRequest(UserValidation.changeStatusValidationSchema),
     UserControllers.updateUserStatus,
 );
 

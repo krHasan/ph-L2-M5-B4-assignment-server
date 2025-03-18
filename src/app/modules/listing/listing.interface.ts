@@ -16,5 +16,6 @@ export type TListing = {
     imageUrls: string[];
     amenities: string[];
     isActive: boolean;
+    isDeleted: boolean;
     status: TListingStatus;
 };

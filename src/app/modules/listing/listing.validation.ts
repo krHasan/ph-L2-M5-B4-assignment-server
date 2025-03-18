@@ -37,11 +37,7 @@ const createListingValidationSchema = z.object({
 
 const updateListingValidationSchema = z.object({
     body: z.object({
-        landlordEmail: z
-            .string({
-                required_error: "Landlord info is required",
-            })
-            .optional(),
+        rentArea: z.enum(rentAreaArray as [string, ...string[]]).optional(),
         location: z
             .string({
                 required_error: "Location is required",

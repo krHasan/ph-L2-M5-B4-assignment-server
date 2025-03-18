@@ -56,6 +56,10 @@ const listingSchema = new Schema<TListing>(
             type: Boolean,
             default: true,
         },
+        isDeleted: {
+            type: Boolean,
+            default: false,
+        },
         status: {
             type: String,
             enum: listingStatusArray,
@@ -66,5 +70,22 @@ const listingSchema = new Schema<TListing>(
         timestamps: true,
     },
 );
+
+listingSchema.pre("find", function (next) {
+    this.find({ isDeleted: { $ne: true } });
+    next();
+});
+
+listingSchema.pre("aggregate", function (next) {
+    this.pipeline().unshift({
+        $match: { isDeleted: { $ne: true } },
+    });
+    next();
+});
+
+listingSchema.pre("findOne", function (next) {
+    this.find({ isDeleted: { $ne: true } });
+    next();
+});
 
 export const Listing = model<TListing>("Listing", listingSchema);

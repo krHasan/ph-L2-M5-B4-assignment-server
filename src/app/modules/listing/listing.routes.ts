@@ -37,6 +37,12 @@ router.patch(
     ListingControllers.updateListing,
 );
 
+router.patch(
+    "/update-status/:listingId",
+    auth(USER_ROLE.admin, USER_ROLE.landlord),
+    ListingControllers.updateListingStatus,
+);
+
 router.delete(
     "/:listingId",
     auth(USER_ROLE.admin, USER_ROLE.landlord),

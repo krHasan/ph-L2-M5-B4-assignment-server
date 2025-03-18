@@ -47,6 +47,7 @@ const getListingById = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getMyListings = catchAsync(async (req: Request, res: Response) => {
+    console.log(req.user);
     const result = await ListingServices.getMyListingsFromDB(
         req.query,
         req.user as TJwtPayload,
@@ -96,6 +97,19 @@ const deleteListing = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+const updateListingStatus = catchAsync(async (req: Request, res: Response) => {
+    const result = await ListingServices.updateListingStatusIntoDB(
+        req.params.listingId,
+    );
+
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: "List is updated successfully",
+        data: result,
+    });
+});
+
 export const ListingControllers = {
     createListing,
     getAllListings,
@@ -103,4 +117,5 @@ export const ListingControllers = {
     getMyListings,
     updateListing,
     deleteListing,
+    updateListingStatus,
 };

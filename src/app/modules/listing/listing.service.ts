@@ -43,7 +43,6 @@ const getAllListingsFromDB = async (query: Record<string, unknown>) => {
     const filter: Record<string, any> = { isActive: true };
 
     // Filter by rentType
-    console.log(query);
     if (rentType) {
         const rentTypeArray =
             typeof rentType === "string"
@@ -52,7 +51,6 @@ const getAllListingsFromDB = async (query: Record<string, unknown>) => {
                   ? rentType
                   : [rentType];
         filter.rentType = { $in: rentTypeArray };
-        console.log(filter);
     }
 
     // Filter by rentArea
@@ -109,6 +107,7 @@ const getMyListingsFromDB = async (
     query: Record<string, unknown>,
     authUser: TJwtPayload,
 ) => {
+    console.log(authUser.email);
     const user = await User.isUserExistsByEmail(authUser.email);
 
     if (!user) {
@@ -154,7 +153,7 @@ const updateListing = async (
         _id: listingId,
     });
 
-    if (!user?.isDeleted) {
+    if (user?.isDeleted) {
         throw new AppError(httpStatus.BAD_REQUEST, "User is not active");
     }
     if (!listing) {
@@ -171,14 +170,33 @@ const updateListing = async (
 const deleteListingFromDB = async (listingId: string) => {
     const listing = await Listing.findById(listingId);
 
-    if (!listing || !listing.isActive) {
+    if (!listing || listing.isDeleted) {
         throw new AppError(httpStatus.NOT_FOUND, "Listing not found");
     }
 
     return await Listing.findByIdAndUpdate(
         listingId,
         {
+            isDeleted: true,
             isActive: false,
+        },
+        {
+            new: true,
+        },
+    );
+};
+
+const updateListingStatusIntoDB = async (listingId: string) => {
+    const listing = await Listing.findById(listingId);
+
+    if (!listing || listing.isDeleted) {
+        throw new AppError(httpStatus.NOT_FOUND, "Listing not found");
+    }
+
+    return await Listing.findByIdAndUpdate(
+        listingId,
+        {
+            isActive: !listing.isActive,
         },
         {
             new: true,
@@ -193,4 +211,5 @@ export const ListingServices = {
     getMyListingsFromDB,
     updateListing,
     deleteListingFromDB,
+    updateListingStatusIntoDB,
 };

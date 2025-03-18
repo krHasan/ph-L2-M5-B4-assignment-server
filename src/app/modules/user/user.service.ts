@@ -87,9 +87,34 @@ const myProfile = async (authUser: TJwtPayload) => {
     return isUserExists;
 };
 
-const updateUserStatus = async (id: string, payload: { status: string }) => {
-    const result = await User.findByIdAndUpdate(id, payload, { new: true });
-    return result;
+const updateUserStatus = async (id: string) => {
+    const user = await User.findById(id);
+
+    if (!user || user.isDeleted) {
+        throw new AppError(httpStatus.NOT_FOUND, "User not found");
+    }
+
+    if (user.status === USER_STATUS.active) {
+        return await User.findByIdAndUpdate(
+            id,
+            {
+                status: USER_STATUS.blocked,
+            },
+            {
+                new: true,
+            },
+        );
+    } else {
+        return await User.findByIdAndUpdate(
+            id,
+            {
+                status: USER_STATUS.active,
+            },
+            {
+                new: true,
+            },
+        );
+    }
 };
 
 export const UserServices = {
