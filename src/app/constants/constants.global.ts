@@ -15,6 +15,7 @@ export const REQUEST_STATUS = {
     pending: "pending",
     approved: "approved",
     rejected: "rejected",
+    canceled: "canceled",
 } as const;
 export const requestStatusArray = Object.values(REQUEST_STATUS);
 

@@ -20,27 +20,10 @@ router.get(
     RequestControllers.getAllRequests,
 );
 
-// router.get(
-//     "/my-listings",
-//     auth(USER_ROLE.landlord),
-//     ListingControllers.getMyListings,
-// );
-
-// router.get("/:listingId", ListingControllers.getListingById);
-
-// router.patch(
-//     "/:listingId",
-//     auth(USER_ROLE.landlord),
-//     multerUpload.fields([{ name: "images" }]),
-//     parseBody,
-//     validateRequest(ListingValidations.updateListingValidationSchema),
-//     ListingControllers.updateListing,
-// );
-
-// router.patch(
-//     "/update-status/:listingId",
-//     auth(USER_ROLE.admin, USER_ROLE.landlord),
-//     ListingControllers.updateListingStatus,
-// );
+router.patch(
+    "/cancel-request/:requestId",
+    auth(USER_ROLE.tenant, USER_ROLE.landlord),
+    RequestControllers.cancelRequest,
+);
 
 export const RequestRoutes = router;

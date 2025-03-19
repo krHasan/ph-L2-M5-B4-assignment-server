@@ -8,7 +8,11 @@ import { TRequest } from "./request.interface";
 import { Listing } from "../listing/listing.model";
 import { RequestModel } from "./request.model";
 import QueryBuilder from "../../builder/QueryBuilder";
-import { USER_ROLE } from "../../constants/constants.global";
+import {
+    PAYMENT_STATUS,
+    REQUEST_STATUS,
+    USER_ROLE,
+} from "../../constants/constants.global";
 
 const createRequestIntoDB = async (
     requestData: Partial<TRequest>,
@@ -44,73 +48,6 @@ const createRequestIntoDB = async (
     const result = await RequestModel.create(saveData);
     return result;
 };
-
-// const getAllListingsFromDB = async (query: Record<string, unknown>) => {
-//     const { minAmount, maxAmount, rentType, rentArea, ...pQuery } = query;
-
-//     // Build the filter object
-//     const filter: Record<string, any> = { isActive: true };
-
-//     // Filter by rentType
-//     if (rentType) {
-//         const rentTypeArray =
-//             typeof rentType === "string"
-//                 ? rentType.split(",")
-//                 : Array.isArray(rentType)
-//                   ? rentType
-//                   : [rentType];
-//         filter.rentType = { $in: rentTypeArray };
-//     }
-
-//     // Filter by rentArea
-//     if (rentArea) {
-//         const rentAreaArray =
-//             typeof rentArea === "string"
-//                 ? rentArea.split(",")
-//                 : Array.isArray(rentArea)
-//                   ? rentArea
-//                   : [rentArea];
-//         filter.rentArea = { $in: rentAreaArray };
-//     }
-
-//     const listingQuery = new QueryBuilder(
-//         Listing.find(filter).populate({
-//             path: "landlordId",
-//         }),
-//         pQuery,
-//     )
-//         .search(["location", "description"])
-//         .filter()
-//         .sort()
-//         .paginate()
-//         .fields()
-//         .priceRange(Number(minAmount) || 0, Number(maxAmount) || Infinity);
-
-//     const listings = await listingQuery.modelQuery.lean();
-
-//     const meta = await listingQuery.countTotal();
-
-//     return {
-//         meta,
-//         result: listings,
-//     };
-// };
-
-// const getListingByIdFromDB = async (listingId: string) => {
-//     const listing = await Listing.findById(listingId).populate({
-//         path: "landlordId",
-//     });
-
-//     if (!listing) {
-//         throw new AppError(httpStatus.NOT_FOUND, "Listing not found");
-//     }
-
-//     if (!listing.isActive) {
-//         throw new AppError(httpStatus.BAD_REQUEST, "Listing is not active");
-//     }
-
-//     return listing;
-// };
 
 const getAllRequestsFromDB = async (
     query: Record<string, unknown>,
@@ -196,72 +133,35 @@ const getAllRequestsFromDB = async (
     }
 };
 
-// const updateListing = async (
-//     listingId: string,
-//     payload: Partial<TListing>,
-//     listingImages: IImageFiles,
-//     authUser: TJwtPayload,
-// ) => {
-//     const { images } = listingImages;
+const cancelRequestIntoDB = async (requestId: string) => {
+    const request = await RequestModel.findById(requestId);
 
-//     const user = await User.isUserExistsByEmail(authUser.email);
-//     const listing = await Listing.findOne({
-//         landlordId: user?._id,
-//         _id: listingId,
-//     });
+    if (
+        !request ||
+        request.isCanceled ||
+        request.status !== REQUEST_STATUS.pending ||
+        request.paymentStatus === PAYMENT_STATUS.paid
+    ) {
+        throw new AppError(
+            httpStatus.NOT_FOUND,
+            "You can not cancel this request",
+        );
+    }
 
-//     if (user?.isDeleted) {
-//         throw new AppError(httpStatus.BAD_REQUEST, "User is not active");
-//     }
-//     if (!listing) {
-//         throw new AppError(httpStatus.NOT_FOUND, "Listing not found");
-//     }
-
-//     if (images && images.length > 0) {
-//         payload.imageUrls = images.map((image) => image.path);
-//     }
-
-//     return await Listing.findByIdAndUpdate(listingId, payload, { new: true });
-// };
-
-// const deleteListingFromDB = async (listingId: string) => {
-//     const listing = await Listing.findById(listingId);
-
-//     if (!listing || listing.isDeleted) {
-//         throw new AppError(httpStatus.NOT_FOUND, "Listing not found");
-//     }
-
-//     return await Listing.findByIdAndUpdate(
-//         listingId,
-//         {
-//             isDeleted: true,
-//             isActive: false,
-//         },
-//         {
-//             new: true,
-//         },
-//     );
-// };
-
-// const updateListingStatusIntoDB = async (listingId: string) => {
-//     const listing = await Listing.findById(listingId);
-
-//     if (!listing || listing.isDeleted) {
-//         throw new AppError(httpStatus.NOT_FOUND, "Listing not found");
-//     }
-
-//     return await Listing.findByIdAndUpdate(
-//         listingId,
-//         {
-//             isActive: !listing.isActive,
-//         },
-//         {
-//             new: true,
-//         },
-//     );
-// };
+    return await RequestModel.findByIdAndUpdate(
+        requestId,
+        {
+            isCanceled: true,
+            status: REQUEST_STATUS.canceled,
+        },
+        {
+            new: true,
+        },
+    );
+};
 
 export const RequestServices = {
     createRequestIntoDB,
     getAllRequestsFromDB,
+    cancelRequestIntoDB,
 };

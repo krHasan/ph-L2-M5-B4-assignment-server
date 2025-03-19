@@ -47,6 +47,10 @@ const requestSchema = new Schema<TRequest>(
         specialRequirements: {
             type: String,
         },
+        isCanceled: {
+            type: Boolean,
+            default: false,
+        },
     },
     {
         timestamps: true,

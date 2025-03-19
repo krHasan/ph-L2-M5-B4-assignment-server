@@ -16,4 +16,5 @@ export type TRequest = {
     paymentStatus: TPaymentStatus;
     moveInDate: Date;
     specialRequirements: string;
+    isCanceled: boolean;
 };
