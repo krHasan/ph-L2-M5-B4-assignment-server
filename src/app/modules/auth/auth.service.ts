@@ -91,7 +91,6 @@ const refreshToken = async (token: string) => {
 
     const { email, iat } = decoded;
 
-    console.log(decoded);
     const user = await User.isUserExistsByEmail(email);
     if (!user || user?.isDeleted || user?.status === USER_STATUS.blocked) {
         throw new AppError(httpStatus.NOT_FOUND, "User not found");
@@ -129,8 +128,6 @@ const forgetPassword = async (email: string) => {
     if (!user || user?.isDeleted || user?.status === USER_STATUS.blocked) {
         throw new AppError(httpStatus.NOT_FOUND, "User not found");
     }
-
-    console.log(user.email);
 
     const jwtPayload: TJwtPayload = {
         email: user.email,

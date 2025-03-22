@@ -160,8 +160,38 @@ const cancelRequestIntoDB = async (requestId: string) => {
     );
 };
 
+const updateRequestStatusIntoDB = async (
+    requestId: string,
+    payload: { status: string },
+) => {
+    const request = await RequestModel.findById(requestId);
+
+    if (
+        !request ||
+        request.isCanceled ||
+        request.status !== REQUEST_STATUS.pending ||
+        request.paymentStatus === PAYMENT_STATUS.paid
+    ) {
+        throw new AppError(
+            httpStatus.NOT_FOUND,
+            `You can not ${payload.status} this request`,
+        );
+    }
+
+    return await RequestModel.findByIdAndUpdate(
+        requestId,
+        {
+            status: payload.status,
+        },
+        {
+            new: true,
+        },
+    );
+};
+
 export const RequestServices = {
     createRequestIntoDB,
     getAllRequestsFromDB,
     cancelRequestIntoDB,
+    updateRequestStatusIntoDB,
 };

@@ -107,7 +107,6 @@ const getMyListingsFromDB = async (
     query: Record<string, unknown>,
     authUser: TJwtPayload,
 ) => {
-    console.log(authUser.email);
     const user = await User.isUserExistsByEmail(authUser.email);
 
     if (!user) {

@@ -22,8 +22,15 @@ router.get(
 
 router.patch(
     "/cancel-request/:requestId",
-    auth(USER_ROLE.tenant, USER_ROLE.landlord),
+    auth(USER_ROLE.tenant),
     RequestControllers.cancelRequest,
+);
+
+router.patch(
+    "/change-request-status/:requestId",
+    auth(USER_ROLE.landlord),
+    validateRequest(RequestValidations.updateRequestStatusValidationSchema),
+    RequestControllers.updateRequestStatus,
 );
 
 export const RequestRoutes = router;

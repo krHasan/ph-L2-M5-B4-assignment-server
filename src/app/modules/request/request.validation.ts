@@ -9,7 +9,15 @@ const createRequestValidationSchema = z.object({
         specialRequirements: z.string().optional(),
     }),
 });
+const updateRequestStatusValidationSchema = z.object({
+    body: z.object({
+        status: z.string({
+            required_error: "status is required",
+        }),
+    }),
+});
 
 export const RequestValidations = {
     createRequestValidationSchema,
+    updateRequestStatusValidationSchema,
 };

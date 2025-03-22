@@ -22,5 +22,12 @@ export const requestStatusArray = Object.values(REQUEST_STATUS);
 export const PAYMENT_STATUS = {
     pending: "pending",
     paid: "paid",
+    failed: "failed",
 } as const;
 export const paymentStatusArray = Object.values(PAYMENT_STATUS);
+
+export const PAYMENT_TYPE = {
+    COD: "COD",
+    Online: "Online",
+} as const;
+export const paymentTypeArray = Object.values(PAYMENT_TYPE);

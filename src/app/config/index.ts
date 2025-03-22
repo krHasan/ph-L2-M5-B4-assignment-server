@@ -36,4 +36,5 @@ export default {
         cancel_url: process.env.CANCEL_URL,
     },
     frontend_link: process.env.FRONTEND_LINK,
+    backend_link: process.env.BACKEND_LINK,
 };

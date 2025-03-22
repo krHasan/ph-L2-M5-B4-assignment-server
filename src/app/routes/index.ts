@@ -1,10 +1,10 @@
 import { Router } from "express";
 import { UserRoutes } from "../modules/user/user.routes";
-// import { AuthRoutes } from "../modules/auth/auth.routes";
 import { SSLRoutes } from "../modules/sslcommerz/sslcommerz.routes";
 import { AuthRoutes } from "../modules/auth/auth.routes";
 import { ListingRoutes } from "../modules/listing/listing.routes";
 import { RequestRoutes } from "../modules/request/request.routes";
+import { PaymentRoutes } from "../modules/payment/payment.routes";
 const router = Router();
 
 const moduleRoutes = [
@@ -27,6 +27,10 @@ const moduleRoutes = [
     {
         path: "/requests",
         route: RequestRoutes,
+    },
+    {
+        path: "/payments",
+        route: PaymentRoutes,
     },
 ];
 

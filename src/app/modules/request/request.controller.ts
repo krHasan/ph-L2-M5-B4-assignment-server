@@ -47,8 +47,23 @@ const cancelRequest = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+const updateRequestStatus = catchAsync(async (req: Request, res: Response) => {
+    const result = await RequestServices.updateRequestStatusIntoDB(
+        req.params.requestId,
+        req.body,
+    );
+
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: "Request is updated successfully",
+        data: result,
+    });
+});
+
 export const RequestControllers = {
     createRequest,
     getAllRequests,
     cancelRequest,
+    updateRequestStatus,
 };
