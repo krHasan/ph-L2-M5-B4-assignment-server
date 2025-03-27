@@ -60,7 +60,8 @@ const forgotPassword = catchAsync(async (req: Request, res: Response) => {
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
-        message: "Check your email to reset your password",
+        message:
+            "Check your email, a link has been sent with 10 minutes duration",
         data: null,
     });
 });

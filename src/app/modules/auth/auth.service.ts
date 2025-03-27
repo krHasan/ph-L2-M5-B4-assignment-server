@@ -141,7 +141,7 @@ const forgetPassword = async (email: string) => {
         "10m",
     );
 
-    const resetUILink = `${config.frontend_link}?email=${user.email}&token=${resetToken}`;
+    const resetUILink = `${config.frontend_link}/reset-password?email=${user.email}&token=${resetToken}`;
 
     EmailHelper.sendEmail(user.email, resetUILink, "Forgot Password");
 };

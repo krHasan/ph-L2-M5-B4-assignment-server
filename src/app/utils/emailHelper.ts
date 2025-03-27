@@ -24,7 +24,7 @@ const sendEmail = async (
 
         // Email configuration
         const mailOptions: any = {
-            from: '"BashaFinder" <kr.hasanbd@gmail.com>',
+            from: '"Rentify" <kr.hasanbd@gmail.com>',
             to: email,
             subject,
             html,
