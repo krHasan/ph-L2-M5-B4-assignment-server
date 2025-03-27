@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Types } from "mongoose";
 import { httpStatus } from "../../config/httpStatus";
 import AppError from "../../errors/appError";
