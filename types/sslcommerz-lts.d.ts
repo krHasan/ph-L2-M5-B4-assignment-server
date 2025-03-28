@@ -1,4 +1,4 @@
-declare module 'sslcommerz-lts' {
+declare module "sslcommerz-lts" {
     interface SSLCommerzInitData {
         total_amount: number;
         currency: string;

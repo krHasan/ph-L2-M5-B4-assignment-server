@@ -1,3 +1,5 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 import SSLCommerzPayment from "sslcommerz-lts";
 import config from "../../config";
 import AppError from "../../errors/appError";
